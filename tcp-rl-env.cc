@@ -280,7 +280,7 @@ TcpTimeStepEnv::GetObservationSpace()
     std::vector<uint32_t> shape = {
         parameterNum,
     };
-    std::string dtype = TypeNameGet<uint64_t>();
+    std::string dtype = TypeNameGet<int64_t>();
 
     Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace>(low, high, shape, dtype);
     NS_LOG_INFO("MyGetObservationSpace: " << box);
@@ -298,7 +298,7 @@ TcpTimeStepEnv::GetObservation()
         parameterNum,
     };
 
-    Ptr<OpenGymBoxContainer<uint64_t>> box = CreateObject<OpenGymBoxContainer<uint64_t>>(shape);
+    Ptr<OpenGymBoxContainer<int64_t>> box = CreateObject<OpenGymBoxContainer<int64_t>>(shape);
 
     box->AddValue(m_socketUuid);
     box->AddValue(1);
@@ -309,11 +309,11 @@ TcpTimeStepEnv::GetObservation()
     box->AddValue(m_tcb->m_segmentSize);
 
     // bytesInFlightSum
-    uint64_t bytesInFlightSum = std::accumulate(m_bytesInFlight.begin(), m_bytesInFlight.end(), 0);
+    int64_t bytesInFlightSum = std::accumulate(m_bytesInFlight.begin(), m_bytesInFlight.end(), 0);
     box->AddValue(bytesInFlightSum);
 
     // bytesInFlightAvg
-    uint64_t bytesInFlightAvg = 0;
+    int64_t bytesInFlightAvg = 0;
     if (!m_bytesInFlight.empty())
     {
         bytesInFlightAvg = bytesInFlightSum / m_bytesInFlight.size();
@@ -321,11 +321,11 @@ TcpTimeStepEnv::GetObservation()
     box->AddValue(bytesInFlightAvg);
 
     // segmentsAckedSum
-    uint64_t segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
+    int64_t segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
     box->AddValue(segmentsAckedSum);
 
     // segmentsAckedAvg
-    uint64_t segmentsAckedAvg = 0;
+    int64_t segmentsAckedAvg = 0;
     if (!m_segmentsAcked.empty())
     {
         segmentsAckedAvg = segmentsAckedSum / m_segmentsAcked.size();
@@ -552,7 +552,7 @@ TcpEventBasedEnv::GetObservationSpace()
     std::vector<uint32_t> shape = {
         parameterNum,
     };
-    std::string dtype = TypeNameGet<uint64_t>();
+    std::string dtype = TypeNameGet<int64_t>();
 
     Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace>(low, high, shape, dtype);
     NS_LOG_INFO("MyGetObservationSpace: " << box);
@@ -570,7 +570,7 @@ TcpEventBasedEnv::GetObservation()
         parameterNum,
     };
 
-    Ptr<OpenGymBoxContainer<uint64_t>> box = CreateObject<OpenGymBoxContainer<uint64_t>>(shape);
+    Ptr<OpenGymBoxContainer<int64_t>> box = CreateObject<OpenGymBoxContainer<int64_t>>(shape);
 
     box->AddValue(m_socketUuid);
     box->AddValue(0);
