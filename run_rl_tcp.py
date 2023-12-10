@@ -101,8 +101,8 @@ ns3Settings = {
     'transport_prot': 'TcpRlTimeBased',
     'duration': my_duration,
     'simSeed': my_sim_seed}
-env = gym.make("ns3ai_gym_env/Ns3-v0", targetName="ns3ai_rltcp_gym",
-               ns3Path="../../../../../", ns3Settings=ns3Settings)
+env = gym.make("ns3ai_gym_env/Ns3-v0", targetName="rl_tcp_gym",
+               ns3Path="../../", ns3Settings=ns3Settings)
 ob_space = env.observation_space
 ac_space = env.action_space
 print("Observation space: ", ob_space, ob_space.dtype)
