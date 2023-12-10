@@ -20,6 +20,7 @@
 import os
 import torch
 import argparse
+import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from agents import TcpNewRenoAgent, TcpDeepQAgent, TcpQAgent
@@ -27,6 +28,8 @@ import ns3ai_gym_env
 import gymnasium as gym
 import sys
 import traceback
+
+from stable_baselines3 import A2C
 
 
 def get_agent(socketUuid, useRl):
@@ -70,9 +73,9 @@ if __name__=="__main__":
 
     args = parser.parse_args()
     my_seed = 42
-    if args.seed is not None:
+    if args.seed:
         my_seed = args.seed
-    print("Python side random seed {}".format(my_seed))
+    logging.info("Python side random seed {}".format(my_seed))
     np.random.seed(my_seed)
     torch.manual_seed(my_seed)
 
@@ -84,10 +87,10 @@ if __name__=="__main__":
     if args.duration:
         my_duration = args.duration
 
-    if args.use_rl:
-        if (args.rl_algo != 'Q') and (args.rl_algo != 'DeepQ'):
-            print("Invalid RL Algorithm {}".format(args.rl_algo))
-            exit(1)
+    # if args.use_rl:
+    #     if (args.rl_algo != 'Q') and (args.rl_algo != 'DeepQ'):
+    #         print("Invalid RL Algorithm {}".format(args.rl_algo))
+    #         exit(1)
 
     res_list = ['ssThresh_l', 'cWnd_l', 'segmentsAcked_l',
                 'segmentSize_l', 'bytesInFlight_l']
@@ -105,16 +108,28 @@ if __name__=="__main__":
                 ns3Path="../../", ns3Settings=ns3Settings)
     ob_space = env.observation_space
     ac_space = env.action_space
-    print("Observation space: ", ob_space, ob_space.dtype)
-    print("Action space: ", ac_space, ac_space.dtype)
+    logging.info("Observation space: ", ob_space, ob_space.dtype)
+    logging.info("Action space: ", ac_space, ac_space.dtype)
 
+    model = A2C("MlpPolicy", env, verbose=2)
+    obs, info = env.reset()
+    for i in range(1000):
+        print(obs)
+        action, _state = model.predict(obs, deterministic=True)
+        print(action)
+        action = np.rint(action).astype(int)
+        obs, reward, terminated, _truncated, info = env.step(action)
+
+    exit(0)
     try:
         obs, info = env.reset()
         reward = 0
         done = False
 
         # get existing agent or create new TCP agent if needed
-        tcpAgent = get_agent(obs[0], args.use_rl)
+        # tcpAgent = get_agent(obs[0], args.use_rl)
+
+        model = A2C("MlpPolicy", env, verbose=2).learn(10000)
 
         while True:
             # current ssThreshold
@@ -130,32 +145,33 @@ if __name__=="__main__":
 
             cur_obs = [ssThresh, cWnd, segmentsAcked, segmentSize, bytesInFlight]
             if args.show_log:
-                print("Recv obs:", cur_obs)
+                logging.info("Recv obs:", cur_obs)
 
             if args.result:
                 for res in res_list:
                     globals()[res].append(globals()[res[:-2]])
 
-            action = tcpAgent.get_action(obs, reward, done, info)
+            # action = tcpAgent.get_action(obs, reward, done, info)
+            action = 2
 
             if args.show_log:
-                print("Step:", stepIdx)
+                logging.info("Step:", stepIdx)
                 stepIdx += 1
-                print("Send act:", action)
+                logging.info("Send act:", action)
 
             obs, reward, done, _, info = env.step(action)
 
             if done:
-                print("Simulation ended")
+                logging.info("Simulation ended")
                 break
 
             # get existing agent of create new TCP agent if needed
-            tcpAgent = get_agent(obs[0], args.use_rl)
+            # tcpAgent = get_agent(obs[0], args.use_rl)
 
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        print("Exception occurred: {}".format(e))
-        print("Traceback:")
+        logging.error("Exception occurred: {}".format(e))
+        logging.error("Traceback:")
         traceback.print_tb(exc_traceback)
         exit(1)
 
@@ -174,5 +190,5 @@ if __name__=="__main__":
                 plt.savefig('{}.png'.format(os.path.join(args.result_dir, res[:-2])))
 
     finally:
-        print("Finally exiting...")
+        logging.info("Finally exiting...")
         env.close()
