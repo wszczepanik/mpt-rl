@@ -131,6 +131,17 @@ if __name__ == "__main__":
 
     # currently fails as -1 can be returned, fix later
     # check_env(env)
+    model = A2C(
+        CustomActorCriticPolicy, env, verbose=2
+    )
+
+    print(model.policy)
+    model.learn(10000, progress_bar=True)
+
+    # from stable_baselines3.common.evaluation import evaluate_policy
+    # evaluate_policy(model, env, n_eval_episodes=1)
+
+    exit(0)
 
     try:
         obs, info = env.reset()
@@ -142,6 +153,8 @@ if __name__ == "__main__":
         ).learn(10000, progress_bar=True)
         # model.learn
         print(model.policy)
+
+
 
         obs, info = env.reset()
         for i in range(1000):

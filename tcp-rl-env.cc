@@ -201,8 +201,8 @@ bool
 TcpEnvBase::ExecuteActions(Ptr<OpenGymDataContainer> action)
 {
     Ptr<OpenGymBoxContainer<float>> box = DynamicCast<OpenGymBoxContainer<float>>(action);
-    m_new_ssThresh = box->GetValue(0);
-    m_new_cWnd = box->GetValue(1);
+    m_new_ssThresh = static_cast<uint32_t>(box->GetValue(0));
+    m_new_cWnd = static_cast<uint32_t>(box->GetValue(1));
 
     NS_LOG_INFO("MyExecuteActions: " << action);
     return true;
@@ -274,7 +274,9 @@ TcpTimeStepEnv::GetObservationSpace()
     // avgInterTx
     // avgInterRx
     // throughput
-    uint32_t parameterNum = 16;
+
+    // uint32_t parameterNum = 16;
+    uint32_t parameterNum = 5;
     float low = 0.0;
     float high = static_cast<float>(__UINT32_MAX__ - 1);
     std::vector<uint32_t> shape = {
@@ -293,17 +295,18 @@ Collect observations
 Ptr<OpenGymDataContainer>
 TcpTimeStepEnv::GetObservation()
 {
-    uint32_t parameterNum = 16;
+    // uint32_t parameterNum = 16;
+    uint32_t parameterNum = 5;
     std::vector<uint32_t> shape = {
         parameterNum,
     };
 
     Ptr<OpenGymBoxContainer<int64_t>> box = CreateObject<OpenGymBoxContainer<int64_t>>(shape);
 
-    box->AddValue(m_socketUuid);
-    box->AddValue(1);
-    box->AddValue(Simulator::Now().GetMicroSeconds());
-    box->AddValue(m_nodeId);
+    // box->AddValue(m_socketUuid);
+    // box->AddValue(1);
+    // box->AddValue(Simulator::Now().GetMicroSeconds());
+    // box->AddValue(m_nodeId);
     box->AddValue(m_tcb->m_ssThresh);
     box->AddValue(m_tcb->m_cWnd);
     box->AddValue(m_tcb->m_segmentSize);
@@ -312,56 +315,56 @@ TcpTimeStepEnv::GetObservation()
     int64_t bytesInFlightSum = std::accumulate(m_bytesInFlight.begin(), m_bytesInFlight.end(), 0);
     box->AddValue(bytesInFlightSum);
 
-    // bytesInFlightAvg
-    int64_t bytesInFlightAvg = 0;
-    if (!m_bytesInFlight.empty())
-    {
-        bytesInFlightAvg = bytesInFlightSum / m_bytesInFlight.size();
-    }
-    box->AddValue(bytesInFlightAvg);
+    // // bytesInFlightAvg
+    // int64_t bytesInFlightAvg = 0;
+    // if (!m_bytesInFlight.empty())
+    // {
+    //     bytesInFlightAvg = bytesInFlightSum / m_bytesInFlight.size();
+    // }
+    // box->AddValue(bytesInFlightAvg);
 
     // segmentsAckedSum
     int64_t segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
     box->AddValue(segmentsAckedSum);
 
-    // segmentsAckedAvg
-    int64_t segmentsAckedAvg = 0;
-    if (!m_segmentsAcked.empty())
-    {
-        segmentsAckedAvg = segmentsAckedSum / m_segmentsAcked.size();
-    }
-    box->AddValue(segmentsAckedAvg);
+    // // segmentsAckedAvg
+    // int64_t segmentsAckedAvg = 0;
+    // if (!m_segmentsAcked.empty())
+    // {
+    //     segmentsAckedAvg = segmentsAckedSum / m_segmentsAcked.size();
+    // }
+    // box->AddValue(segmentsAckedAvg);
 
-    // avgRtt
-    Time avgRtt = Seconds(0.0);
-    if (m_rttSampleNum)
-    {
-        avgRtt = m_rttSum / m_rttSampleNum;
-    }
-    box->AddValue(avgRtt.GetMicroSeconds());
+    // // avgRtt
+    // Time avgRtt = Seconds(0.0);
+    // if (m_rttSampleNum)
+    // {
+    //     avgRtt = m_rttSum / m_rttSampleNum;
+    // }
+    // box->AddValue(avgRtt.GetMicroSeconds());
 
-    // m_minRtt
-    box->AddValue(m_tcb->m_minRtt.GetMicroSeconds());
+    // // m_minRtt
+    // box->AddValue(m_tcb->m_minRtt.GetMicroSeconds());
 
-    // avgInterTx
-    Time avgInterTx = Seconds(0.0);
-    if (m_interTxTimeNum)
-    {
-        avgInterTx = m_interTxTimeSum / m_interTxTimeNum;
-    }
-    box->AddValue(avgInterTx.GetMicroSeconds());
+    // // avgInterTx
+    // Time avgInterTx = Seconds(0.0);
+    // if (m_interTxTimeNum)
+    // {
+    //     avgInterTx = m_interTxTimeSum / m_interTxTimeNum;
+    // }
+    // box->AddValue(avgInterTx.GetMicroSeconds());
 
-    // avgInterRx
-    Time avgInterRx = Seconds(0.0);
-    if (m_interRxTimeNum)
-    {
-        avgInterRx = m_interRxTimeSum / m_interRxTimeNum;
-    }
-    box->AddValue(avgInterRx.GetMicroSeconds());
+    // // avgInterRx
+    // Time avgInterRx = Seconds(0.0);
+    // if (m_interRxTimeNum)
+    // {
+    //     avgInterRx = m_interRxTimeSum / m_interRxTimeNum;
+    // }
+    // box->AddValue(avgInterRx.GetMicroSeconds());
 
-    // throughput  bytes/s
-    float throughput = (segmentsAckedSum * m_tcb->m_segmentSize) / m_timeStep.GetSeconds();
-    box->AddValue(throughput);
+    // // throughput  bytes/s
+    // float throughput = (segmentsAckedSum * m_tcb->m_segmentSize) / m_timeStep.GetSeconds();
+    // box->AddValue(throughput);
 
     // Print data
     NS_LOG_INFO("MyGetObservation: " << box);
