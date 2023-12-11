@@ -5,6 +5,18 @@ import torch
 from torch import nn
 
 from stable_baselines3.common.policies import ActorCriticPolicy
+from stable_baselines3.common.callbacks import BaseCallback
+
+
+class CustomCallback(BaseCallback):
+    """
+    A custom callback that derives from ``BaseCallback``.
+
+    :param verbose: (int) Verbosity level 0: not output 1: info 2: debug
+    """
+
+    def __init__(self, verbose=0):
+        super(CustomCallback, self).__init__(verbose)
 
 
 class CustomNetwork(nn.Module):
@@ -32,13 +44,17 @@ class CustomNetwork(nn.Module):
 
         # Policy network
         self.policy_net = nn.Sequential(
-            nn.Linear(feature_dim, last_layer_dim_pi), nn.ReLU(),
-            nn.Linear(last_layer_dim_pi, last_layer_dim_pi), nn.ReLU()
+            nn.Linear(feature_dim, last_layer_dim_pi),
+            nn.ReLU(),
+            nn.Linear(last_layer_dim_pi, last_layer_dim_pi),
+            nn.ReLU(),
         )
         # Value network
         self.value_net = nn.Sequential(
-            nn.Linear(feature_dim, last_layer_dim_vf), nn.ReLU(),
-            nn.Linear(last_layer_dim_vf, last_layer_dim_vf), nn.ReLU()
+            nn.Linear(feature_dim, last_layer_dim_vf),
+            nn.ReLU(),
+            nn.Linear(last_layer_dim_vf, last_layer_dim_vf),
+            nn.ReLU(),
         )
 
     def forward(self, features: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:

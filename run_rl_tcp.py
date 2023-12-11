@@ -139,18 +139,21 @@ if __name__ == "__main__":
 
         model = A2C(
             CustomActorCriticPolicy, env, verbose=2
-        )  # .learn(10000, progress_bar=True)
-
+        ).learn(10000, progress_bar=True)
+        # model.learn
         print(model.policy)
 
         obs, info = env.reset()
         for i in range(1000):
             print(obs)
             action, _state = model.predict(obs, deterministic=True)
+            
             print(action)
             action = np.rint(action).astype(int)
             # action = action.to(torch.int32)
             obs, reward, terminated, _truncated, info = env.step(action)
+
+            model.train()
 
         # while True:
         #     # current ssThreshold

@@ -158,7 +158,7 @@ TcpEnvBase::GetActionSpace()
     std::vector<uint32_t> shape = {
         parameterNum,
     };
-    std::string dtype = TypeNameGet<uint32_t>();
+    std::string dtype = TypeNameGet<float>();
 
     Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace>(low, high, shape, dtype);
     NS_LOG_INFO("MyGetActionSpace: " << box);
@@ -200,7 +200,7 @@ Execute received actions
 bool
 TcpEnvBase::ExecuteActions(Ptr<OpenGymDataContainer> action)
 {
-    Ptr<OpenGymBoxContainer<uint32_t>> box = DynamicCast<OpenGymBoxContainer<uint32_t>>(action);
+    Ptr<OpenGymBoxContainer<float>> box = DynamicCast<OpenGymBoxContainer<float>>(action);
     m_new_ssThresh = box->GetValue(0);
     m_new_cWnd = box->GetValue(1);
 
