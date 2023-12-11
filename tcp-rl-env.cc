@@ -276,7 +276,7 @@ TcpTimeStepEnv::GetObservationSpace()
     // throughput
     uint32_t parameterNum = 16;
     float low = 0.0;
-    float high = 1000000000.0;
+    float high = static_cast<float>(__UINT32_MAX__ - 1);
     std::vector<uint32_t> shape = {
         parameterNum,
     };
@@ -548,7 +548,7 @@ TcpEventBasedEnv::GetObservationSpace()
     // ECN state
     uint32_t parameterNum = 15;
     float low = 0.0;
-    float high = 1000000000.0;
+    float high = static_cast<float>(__UINT32_MAX__ - 1);
     std::vector<uint32_t> shape = {
         parameterNum,
     };
