@@ -8,17 +8,6 @@ from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.callbacks import BaseCallback
 
 
-class CustomCallback(BaseCallback):
-    """
-    A custom callback that derives from ``BaseCallback``.
-
-    :param verbose: (int) Verbosity level 0: not output 1: info 2: debug
-    """
-
-    def __init__(self, verbose=0):
-        super(CustomCallback, self).__init__(verbose)
-
-
 class CustomNetwork(nn.Module):
     """
     Custom network for policy and value function.
@@ -35,6 +24,13 @@ class CustomNetwork(nn.Module):
         last_layer_dim_pi: int = 64,
         last_layer_dim_vf: int = 64,
     ):
+        """Custom network module. Allows to create custom architecture.
+
+        Args:
+            feature_dim (int): Dimension of features, input.
+            last_layer_dim_pi (int, optional): Dimension of last layer of actor network. Defaults to 64.
+            last_layer_dim_vf (int, optional): Dimension of last layer of critic network. Defaults to 64.
+        """
         super().__init__()
 
         # IMPORTANT:
