@@ -135,8 +135,9 @@ if __name__ == "__main__":
     # check_env(env)
 
     try:
+        log_path = os.path.join(args.save_dir, "log/")
         env = ArgumentWrapper(env, env_kwargs)
-        env = Monitor(env, filename=args.save_dir)
+        env = Monitor(env, filename=log_path)
 
         if args.load_model:
             model = A2C.load(args.load_model, env=env)
@@ -151,25 +152,28 @@ if __name__ == "__main__":
         # manually close env, by default it does not happen
         model.env.close()
 
-        from stable_baselines3.common import results_plotter
-
         results_plotter.plot_results(
-            [args.save_dir], total_timesteps, results_plotter.X_TIMESTEPS, "test_name"
+            [log_path], total_timesteps, results_plotter.X_TIMESTEPS, "test_name"
         )
 
         # from stable_baselines3.common.evaluation import evaluate_policy
         # evaluate_policy(model, env, n_eval_episodes=1)
 
-        model.save(os.path.join(args.save_dir, "model"))
+        saved_model_path = os.path.join(args.save_dir, "model")
+        model.save(saved_model_path)
 
         del model
 
-        model = A2C.load(os.path.join(args.save_dir, "model"), env=env)
+        model = A2C.load(saved_model_path, env=env)
         input("Press enter to close.")
 
     finally:
         logging.info("Finally exiting...")
-        env.close()
+        # if crashed then close gently
+        try:
+            env.close()
+        except AttributeError:
+            pass
 
     # try:
     #     obs, info = env.reset()
