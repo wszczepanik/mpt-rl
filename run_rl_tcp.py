@@ -78,6 +78,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--rl_algo", type=str, default="DeepQ", help="RL Algorithm, Q or DeepQ"
     )
+    parser.add_argument(
+        "--save_dir", type=str, default="saved/", help="Location where to save data"
+    )
+    parser.add_argument("--load_model", type=str, help="Load model from file, optional")
 
     args = parser.parse_args()
     my_seed = 42
@@ -131,16 +135,22 @@ if __name__ == "__main__":
 
     # currently fails as -1 can be returned, fix later
     # check_env(env)
-    model = A2C(
-        CustomActorCriticPolicy, env, verbose=2
-    )
+    if args.load_model:
+        model = A2C.load(args.load_model, env=env)
+    else:
+        model = A2C(CustomActorCriticPolicy, env, verbose=2)
 
-    print(model.policy)
+    logging.info(model.policy)
     model.learn(10000, progress_bar=True)
 
     # from stable_baselines3.common.evaluation import evaluate_policy
     # evaluate_policy(model, env, n_eval_episodes=1)
 
+    model.save(os.path.join(args.save_dir, "model"))
+
+    del model
+
+    model = A2C.load(os.path.join(args.save_dir, "model"), env=env)
     exit(0)
 
     try:
@@ -148,19 +158,17 @@ if __name__ == "__main__":
         reward = 0
         done = False
 
-        model = A2C(
-            CustomActorCriticPolicy, env, verbose=2
-        ).learn(10000, progress_bar=True)
+        model = A2C(CustomActorCriticPolicy, env, verbose=2).learn(
+            10000, progress_bar=True
+        )
         # model.learn
         print(model.policy)
-
-
 
         obs, info = env.reset()
         for i in range(1000):
             print(obs)
             action, _state = model.predict(obs, deterministic=True)
-            
+
             print(action)
             action = np.rint(action).astype(int)
             # action = action.to(torch.int32)
