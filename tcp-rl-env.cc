@@ -324,8 +324,8 @@ TcpTimeStepEnv::GetObservation()
     // box->AddValue(bytesInFlightAvg);
 
     // segmentsAckedSum
-    int64_t segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
-    box->AddValue(segmentsAckedSum);
+    m_segmentsAckedSum = std::accumulate(m_segmentsAcked.begin(), m_segmentsAcked.end(), 0);
+    box->AddValue(m_segmentsAckedSum);
 
     // // segmentsAckedAvg
     // int64_t segmentsAckedAvg = 0;
@@ -362,9 +362,9 @@ TcpTimeStepEnv::GetObservation()
     // }
     // box->AddValue(avgInterRx.GetMicroSeconds());
 
-    // // throughput  bytes/s
-    // float throughput = (segmentsAckedSum * m_tcb->m_segmentSize) / m_timeStep.GetSeconds();
-    // box->AddValue(throughput);
+    // throughput  bytes/s
+    m_throughput = (m_segmentsAckedSum * m_tcb->m_segmentSize) / m_timeStep.GetSeconds();
+    // box->AddValue(m_throughput);
 
     // Print data
     NS_LOG_INFO("MyGetObservation: " << box);
@@ -382,6 +382,17 @@ TcpTimeStepEnv::GetObservation()
     m_interRxTimeSum = MicroSeconds(0.0);
 
     return box;
+}
+
+/*
+Define reward function
+*/
+float
+TcpTimeStepEnv::GetReward()
+{
+    m_envReward = m_throughput;
+    NS_LOG_INFO("MyGetReward: " << m_envReward);
+    return m_envReward;
 }
 
 void

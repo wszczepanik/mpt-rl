@@ -152,9 +152,9 @@ if __name__ == "__main__":
         # manually close env, by default it does not happen
         model.env.close()
 
-        results_plotter.plot_results(
-            [log_path], total_timesteps, results_plotter.X_TIMESTEPS, "test_name"
-        )
+        # results_plotter.plot_results(
+        #     [log_path], total_timesteps, results_plotter.X_TIMESTEPS, "test_name"
+        # )
 
         # from stable_baselines3.common.evaluation import evaluate_policy
         # evaluate_policy(model, env, n_eval_episodes=1)

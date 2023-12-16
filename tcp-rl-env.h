@@ -110,6 +110,9 @@ class TcpTimeStepEnv : public TcpEnvBase
     Ptr<OpenGymSpace> GetObservationSpace() override;
     Ptr<OpenGymDataContainer> GetObservation() override;
 
+    // reward
+    float GetReward() override;
+
     // trace packets, e.g. for calculating inter tx/rx time
     void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
     void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
@@ -131,6 +134,9 @@ class TcpTimeStepEnv : public TcpEnvBase
     Ptr<const TcpSocketState> m_tcb;
     std::vector<uint32_t> m_bytesInFlight;
     std::vector<uint32_t> m_segmentsAcked;
+
+    int64_t m_segmentsAckedSum = 0;
+    float m_throughput = 0;
 
     uint64_t m_rttSampleNum{0};
     Time m_rttSum{MicroSeconds(0.0)};
