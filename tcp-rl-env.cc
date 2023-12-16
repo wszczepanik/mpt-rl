@@ -201,6 +201,7 @@ bool
 TcpEnvBase::ExecuteActions(Ptr<OpenGymDataContainer> action)
 {
     Ptr<OpenGymBoxContainer<float>> box = DynamicCast<OpenGymBoxContainer<float>>(action);
+    // Python side allows only float as action so need to convert
     m_new_ssThresh = static_cast<uint32_t>(box->GetValue(0));
     m_new_cWnd = static_cast<uint32_t>(box->GetValue(1));
 
