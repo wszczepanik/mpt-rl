@@ -98,24 +98,6 @@ class TcpRlTimeBased : public TcpRlBase
     void CreateGymEnv() override;
 };
 
-class TcpRlEventBased : public TcpRlBase
-{
-  public:
-    static TypeId GetTypeId();
-
-    TcpRlEventBased();
-    TcpRlEventBased(const TcpRlEventBased& sock);
-    ~TcpRlEventBased() override;
-
-    std::string GetName() const override;
-
-  private:
-    void CreateGymEnv() override;
-    // OpenGymEnv env
-    float m_reward{1.0};
-    float m_penalty{-100.0};
-};
-
 } // namespace ns3
 
 #endif // NS3_TCP_RL_H

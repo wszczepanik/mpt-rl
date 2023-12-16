@@ -143,48 +143,6 @@ class TcpTimeStepEnv : public TcpEnvBase
     Time m_interRxTimeSum{MicroSeconds(0.0)};
 };
 
-class TcpEventBasedEnv : public TcpEnvBase
-{
-  public:
-    TcpEventBasedEnv();
-    ~TcpEventBasedEnv() override;
-    static TypeId GetTypeId();
-    void DoDispose() override;
-
-    void SetReward(float value);
-    void SetPenalty(float value);
-
-    // OpenGym interface
-    Ptr<OpenGymSpace> GetObservationSpace() override;
-    Ptr<OpenGymDataContainer> GetObservation() override;
-
-    // trace packets, e.g. for calculating inter tx/rx time
-    void TxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
-    void RxPktTrace(Ptr<const Packet>, const TcpHeader&, Ptr<const TcpSocketBase>) override;
-
-    // TCP congestion control interface
-    uint32_t GetSsThresh(Ptr<const TcpSocketState> tcb, uint32_t bytesInFlight) override;
-    void IncreaseWindow(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked) override;
-    // optional functions used to collect obs
-    void PktsAcked(Ptr<TcpSocketState> tcb, uint32_t segmentsAcked, const Time& rtt) override;
-    void CongestionStateSet(Ptr<TcpSocketState> tcb,
-                            const TcpSocketState::TcpCongState_t newState) override;
-    void CwndEvent(Ptr<TcpSocketState> tcb, const TcpSocketState::TcpCAEvent_t event) override;
-
-  private:
-    // state
-    CalledFunc_t m_calledFunc;
-    Ptr<const TcpSocketState> m_tcb;
-    uint32_t m_bytesInFlight;
-    uint32_t m_segmentsAcked;
-    Time m_rtt;
-    TcpSocketState::TcpCAEvent_t m_event;
-
-    // reward
-    float m_reward;
-    float m_penalty;
-};
-
 } // namespace ns3
 
 #endif // NS3_TCP_RL_ENV_H
