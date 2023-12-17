@@ -1,10 +1,13 @@
-import os
 import argparse
 import logging
+import os
+from datetime import datetime
 
 import torch
 import numpy as np
+import stable_baselines3 as sb3
 from stable_baselines3 import A2C
+from stable_baselines3.common import logger
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.env_checker import check_env
 from tensorboard import program
@@ -99,34 +102,51 @@ if __name__ == "__main__":
     # check_env(env)
 
     try:
-        log_path = os.path.join(args.save_dir, "log/")
-        logging.info(log_path)
-        env = Monitor(env, filename=log_path)
+        if args.tensorboard_log:
+            tensorboard_log_dir = os.path.join(
+                args.tensorboard_log,
+                datetime.strftime(datetime.now(), "A2C_%Y-%m-%d_%H-%M-%S"),
+            )
+            env = Monitor(
+                env, filename=os.path.join(tensorboard_log_dir, "monitor.csv")
+            )
+        else:
+            tensorboard_log_dir = None
 
         if args.load_model:
             model = A2C.load(
-                args.load_model, env=env, tensorboard_log=args.tensorboard_log
+                args.load_model,
+                env=env,
+                tensorboard_log=tensorboard_log_dir,
+                verbose=1,
             )
         else:
             model = A2C(
                 CustomActorCriticPolicy,
                 env=env,
-                tensorboard_log=args.tensorboard_log,
-                verbose=2,
+                tensorboard_log=tensorboard_log_dir,
+                verbose=1,
             )
 
-        from stable_baselines3.common.logger import configure
-
-        run_tensorboard(args.tensorboard_log)
+        if tensorboard_log_dir:
+            new_logger = logger.configure(
+                tensorboard_log_dir, ["stdout", "csv", "tensorboard"]
+            )
+            model.set_logger(new_logger)
+            # one directory up to show all trials
+            run_tensorboard(args.tensorboard_log)
 
         # print network architecture
         logging.info(model.policy)
 
         total_timesteps = 1000
-        model.learn(total_timesteps, progress_bar=True, log_interval=1)
+        model.learn(total_timesteps, progress_bar=True, log_interval=10)
 
         # manually close env, by default it does not happen
-        model.env.close()
+        try:
+            model.env.close()
+        except UserWarning:
+            pass
 
         # from stable_baselines3.common.evaluation import evaluate_policy
         # evaluate_policy(model, env, n_eval_episodes=1)
@@ -138,7 +158,7 @@ if __name__ == "__main__":
 
         # check if model loading works
         model = A2C.load(saved_model_path, env=env)
-        
+
     # general catch, do not know all possibilities
     except Exception as e:
         print(e)
