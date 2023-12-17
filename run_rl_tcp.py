@@ -17,8 +17,7 @@ import gymnasium as gym
 
 from custom.model import *
 from custom.wrapper import CustomMonitor
-
-logging.basicConfig(level=logging.INFO)
+from custom.callback import TensorboardCallback
 
 
 def run_tensorboard(path=str | os.PathLike) -> None:
@@ -47,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--save_dir",
         type=str,
-        default="scratch/reinforcement-learning/",
+        default="save",
         help="Location where to save data",
     )
     parser.add_argument(
@@ -55,12 +54,25 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--tensorboard_log",
-        default=None,
-        type=str,
+        default=False,
+        type=bool,
         help="Tensorboard log path, optional",
+    )
+    parser.add_argument(
+        "--log_level",
+        default="info",
+        type=str.upper,
+        help="Log level (CRITICAL, FATAL, ERROR, WARN, WARNING, INFO, DEBUG)",
     )
 
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging._nameToLevel[args.log_level])
+
+    save_dir = os.path.join(
+        args.save_dir,
+        datetime.strftime(datetime.now(), "A2C_%Y-%m-%d_%H-%M-%S"),
+    )
 
     my_seed = args.seed
     logging.info(f"Python side random seed {my_seed}")
@@ -103,15 +115,11 @@ if __name__ == "__main__":
 
     try:
         if args.tensorboard_log:
-            tensorboard_log_dir = os.path.join(
-                args.tensorboard_log,
-                datetime.strftime(datetime.now(), "A2C_%Y-%m-%d_%H-%M-%S"),
-            )
-            env = Monitor(
-                env, filename=os.path.join(tensorboard_log_dir, "monitor.csv")
-            )
+            tensorboard_log_dir = save_dir
         else:
             tensorboard_log_dir = None
+
+        env = Monitor(env, filename=os.path.join(save_dir, "monitor.csv"))
 
         if args.load_model:
             model = A2C.load(
@@ -129,18 +137,21 @@ if __name__ == "__main__":
             )
 
         if tensorboard_log_dir:
-            new_logger = logger.configure(
-                tensorboard_log_dir, ["stdout", "csv", "tensorboard"]
-            )
+            new_logger = logger.configure(save_dir, ["stdout", "csv", "tensorboard"])
             model.set_logger(new_logger)
+            custom_callback = TensorboardCallback()
             # one directory up to show all trials
-            run_tensorboard(args.tensorboard_log)
+            run_tensorboard(os.path.dirname(save_dir))
+        else:
+            custom_callback = None
 
         # print network architecture
         logging.info(model.policy)
 
         total_timesteps = 1000
-        model.learn(total_timesteps, progress_bar=True, log_interval=10)
+        model.learn(
+            total_timesteps, progress_bar=True, log_interval=1, callback=custom_callback
+        )
 
         # manually close env, by default it does not happen
         try:
