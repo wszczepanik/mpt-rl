@@ -1,42 +1,29 @@
-# Copyright (c) 2020-2023 Huazhong University of Science and Technology
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation;
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
-# Author: Pengyu Liu <eic_lpy@hust.edu.cn>
-#         Hao Yin <haoyin@uw.edu>
-#         Muyuan Shen <muyuan_shen@hust.edu.cn>
-
 import os
-import torch
 import argparse
 import logging
-import numpy as np
-import matplotlib.pyplot as plt
-from agents import TcpNewRenoAgent, TcpDeepQAgent, TcpQAgent
-import ns3ai_gym_env
-import gymnasium as gym
-import sys
-import traceback
 
+import torch
+import numpy as np
 from stable_baselines3 import A2C
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.env_checker import check_env
+from tensorboard import program
+
+import ns3ai_gym_env
+import gymnasium as gym
 
 from custom.model import *
 from custom.wrapper import CustomMonitor
 
 logging.basicConfig(level=logging.INFO)
+
+
+def run_tensorboard(path=str | os.PathLike) -> None:
+    if path:
+        tb = program.TensorBoard()
+        tb.configure(argv=[None, "--logdir", path])
+        url = tb.launch()
+        logging.info(f"Tensorflow listening on {url}")
 
 
 if __name__ == "__main__":
@@ -50,18 +37,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--duration", type=float, default=10, help="set simulation duration (seconds)"
     )
-    parser.add_argument(
-        "--show_log", action="store_true", help="whether show observation and action"
-    )
     parser.add_argument("--result", action="store_true", help="whether output figures")
     parser.add_argument(
         "--result_dir", type=str, default="./rl_tcp_results", help="output figures path"
-    )
-    parser.add_argument(
-        "--use_rl", action="store_true", help="whether use rl algorithm"
-    )
-    parser.add_argument(
-        "--rl_algo", type=str, default="DeepQ", help="RL Algorithm, Q or DeepQ"
     )
     parser.add_argument(
         "--save_dir",
@@ -86,22 +64,21 @@ if __name__ == "__main__":
     np.random.seed(my_seed)
     torch.manual_seed(my_seed)
 
-    my_sim_seed = args.sim_seed
-
-    res_list = [
-        "ssThresh_l",
-        "cWnd_l",
-        "segmentsAcked_l",
-        "segmentSize_l",
-        "bytesInFlight_l",
-    ]
-    if args.result:
-        for res in res_list:
-            globals()[res] = []
+    # res_list = [
+    #     "ssThresh_l",
+    #     "cWnd_l",
+    #     "segmentsAcked_l",
+    #     "segmentSize_l",
+    #     "bytesInFlight_l",
+    # ]
+    # if args.result:
+    #     for res in res_list:
+    #         globals()[res] = []
 
     # stepIdx = 0
 
     # create env with env_kwargs passed as ns3 arguments
+    my_sim_seed = args.sim_seed
     env_kwargs = {
         "ns3Settings": {
             "transport_prot": "TcpRlTimeBased",
@@ -123,7 +100,7 @@ if __name__ == "__main__":
 
     try:
         log_path = os.path.join(args.save_dir, "log/")
-        print(log_path)
+        logging.info(log_path)
         env = Monitor(env, filename=log_path)
 
         if args.load_model:
@@ -140,14 +117,9 @@ if __name__ == "__main__":
 
         from stable_baselines3.common.logger import configure
 
-        if args.tensorboard_log:
-            from tensorboard import program
+        run_tensorboard(args.tensorboard_log)
 
-            tb = program.TensorBoard()
-            tb.configure(argv=[None, "--logdir", args.tensorboard_log])
-            url = tb.launch()
-            print(f"Tensorflow listening on {url}")
-
+        # print network architecture
         logging.info(model.policy)
 
         total_timesteps = 1000
@@ -164,9 +136,12 @@ if __name__ == "__main__":
 
         del model
 
+        # check if model loading works
         model = A2C.load(saved_model_path, env=env)
-        input("Press enter to close.")
-
+        
+    # general catch, do not know all possibilities
+    except Exception as e:
+        print(e)
     finally:
         logging.info("Finally exiting...")
         # if crashed then close gently
@@ -174,3 +149,6 @@ if __name__ == "__main__":
             env.close()
         except AttributeError:
             pass
+
+    if args.tensorboard_log:
+        input("Press enter to close tensorboard.")
