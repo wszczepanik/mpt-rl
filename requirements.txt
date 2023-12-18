@@ -1,6 +1,5 @@
 gymnasium==0.29.1
 matplotlib==3.8.2
-ns3ai_gym_env.egg==info
 numpy==1.26.2
 stable_baselines3==2.2.1
 torch==2.1.1
