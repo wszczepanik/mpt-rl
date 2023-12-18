@@ -18,6 +18,7 @@ import gymnasium as gym
 from custom.model import *
 from custom.wrapper import CustomMonitor
 from custom.callback import TensorboardCallback
+from custom.environment import Ns3EnvWrapped
 
 
 def run_tensorboard(path=str | os.PathLike) -> None:
@@ -54,8 +55,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--tensorboard_log",
-        default=False,
-        type=bool,
+        type=str,
         help="Tensorboard log path, optional",
     )
     parser.add_argument(
@@ -110,6 +110,9 @@ if __name__ == "__main__":
     logging.info(f"Observation space: {ob_space}, {ob_space.dtype}")
     logging.info(f"Action space: {ac_space}, {ac_space.dtype}")
 
+    # wrap env so seed will be changed after each reset
+    env = Ns3EnvWrapped(env=env)
+
     # currently fails as -1 can be returned, fix later
     # check_env(env)
 
@@ -119,7 +122,7 @@ if __name__ == "__main__":
         else:
             tensorboard_log_dir = None
 
-        env = Monitor(env, filename=os.path.join(save_dir, "monitor.csv"))
+        env = CustomMonitor(env, filename=os.path.join(save_dir, "monitor.csv"))
 
         if args.load_model:
             model = A2C.load(
