@@ -3,6 +3,6 @@ gymnasium==0.29.1
 matplotlib==3.8.2
 numpy==1.26.2
 pandas==2.1.4
-stable_baselines3==2.2.1
+stable_baselines3[extra]==2.2.1
 tensorboard==2.15.1
 torch==2.1.1
