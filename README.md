@@ -45,7 +45,7 @@ pip install -e contrib/ai/model/gym-interface/py
 ## mpt-rl
 Download repository
 ```
-git clone https://github.com/wszczepanik/mpt-rl.git scratch/reinforcement-learning
+git clone https://github.com/wszczepanik/mpt-rl.git scratch/rllib-integration
 ```
 Install Python libraries from `requirements.txt`
 ```

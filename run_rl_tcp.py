@@ -15,6 +15,7 @@ from tensorboard import program
 import ns3ai_gym_env
 import gymnasium as gym
 
+from sim_args import TcpRlSimArgs
 from custom.model import *
 from custom.wrapper import CustomMonitor
 from custom.callback import TensorboardCallback
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--tensorboard_log",
         type=str,
-        help="Tensorboard log path, optional",
+        help="Log to Tensorboard, optional",
     )
     parser.add_argument(
         "--log_level",
@@ -79,29 +80,13 @@ if __name__ == "__main__":
     np.random.seed(my_seed)
     torch.manual_seed(my_seed)
 
-    # res_list = [
-    #     "ssThresh_l",
-    #     "cWnd_l",
-    #     "segmentsAcked_l",
-    #     "segmentSize_l",
-    #     "bytesInFlight_l",
-    # ]
-    # if args.result:
-    #     for res in res_list:
-    #         globals()[res] = []
-
-    # stepIdx = 0
-
     # create env with env_kwargs passed as ns3 arguments
-    my_sim_seed = args.sim_seed
     env_kwargs = {
-        "ns3Settings": {
-            "transport_prot": "TcpRlTimeBased",
-            "duration": args.duration,
-            "simSeed": my_sim_seed,
-            "envTimeStep": 0.1,
-        },
+        "ns3Settings": TcpRlSimArgs(
+            duration=args.duration, simSeed=args.sim_seed
+        ).asdict()
     }
+
     env = gym.make(
         "ns3ai_gym_env/Ns3-v0", targetName="rl_tcp_gym", ns3Path="../../", **env_kwargs
     )

@@ -8,7 +8,7 @@ class Ns3EnvWrapped(gym.Wrapper[ObsType, ActType, ObsType, ActType]):
     """Change ns3settings after each reset
 
     Args:
-        gym (_type_): _description_
+        env (gym.Env): game environment
     """
 
     def __init__(
@@ -21,6 +21,7 @@ class Ns3EnvWrapped(gym.Wrapper[ObsType, ActType, ObsType, ActType]):
         """
         Change ns3settings seed after reset
         """
-        self.env.ns3Settings["simSeed"] += 1
+        # todo: change how things are accessed
+        self.env.unwrapped.ns3Settings["simSeed"] += 1
 
         return self.env.reset(**kwargs)
