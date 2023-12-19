@@ -52,7 +52,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--tensorboard_log",
-        type=str,
+        action="store_true",
         help="Log to Tensorboard, optional",
     )
     parser.add_argument(
