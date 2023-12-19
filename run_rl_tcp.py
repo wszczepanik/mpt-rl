@@ -39,7 +39,7 @@ if __name__ == "__main__":
         "--sim_seed", default=0, type=int, help="set simulation run number"
     )
     parser.add_argument(
-        "--duration", type=float, default=10, help="set simulation duration (seconds)"
+        "--duration", type=float, default=100, help="set simulation duration (seconds)"
     )
     parser.add_argument(
         "--save_dir",
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         # print network architecture
         logging.info(model.policy)
 
-        total_timesteps = 1000
+        total_timesteps = 100000
         model.learn(
             total_timesteps, progress_bar=True, log_interval=1, callback=custom_callback
         )
@@ -147,17 +147,17 @@ if __name__ == "__main__":
         # from stable_baselines3.common.evaluation import evaluate_policy
         # evaluate_policy(model, env, n_eval_episodes=1)
 
-        saved_model_path = os.path.join(args.save_dir, "model")
+        saved_model_path = os.path.join(save_dir, "model")
         model.save(saved_model_path)
 
-        del model
+        # del model
 
-        # check if model loading works
-        model = A2C.load(saved_model_path, env=env)
+        # # check if model loading works
+        # model = A2C.load(saved_model_path, env=env)
 
-    # general catch, do not know all possibilities
-    except Exception as e:
-        print(e)
+    # # general catch, do not know all possibilities
+    # except Exception as e:
+    #     print(e)
     finally:
         logging.info("Finally exiting...")
         # if crashed then close gently
