@@ -22,7 +22,7 @@ from custom.callback import TensorboardCallback
 from custom.environment import Ns3EnvWrapped
 
 
-def run_tensorboard(path=str | os.PathLike) -> None:
+def run_tensorboard(path: str | os.PathLike) -> None:
     if path:
         tb = program.TensorBoard()
         tb.configure(argv=[None, "--logdir", path])
@@ -40,10 +40,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--duration", type=float, default=10, help="set simulation duration (seconds)"
-    )
-    parser.add_argument("--result", action="store_true", help="whether output figures")
-    parser.add_argument(
-        "--result_dir", type=str, default="./rl_tcp_results", help="output figures path"
     )
     parser.add_argument(
         "--save_dir",
@@ -63,6 +59,7 @@ if __name__ == "__main__":
         "--log_level",
         default="info",
         type=str.upper,
+        choices=["CRITICAL", "FATAL", "ERROR", "WARN", "WARNING", "INFO", "DEBUG"],
         help="Log level (CRITICAL, FATAL, ERROR, WARN, WARNING, INFO, DEBUG)",
     )
 
@@ -88,7 +85,7 @@ if __name__ == "__main__":
     }
 
     env = gym.make(
-        "ns3ai_gym_env/Ns3-v0", targetName="rl_tcp_gym", ns3Path="../../", **env_kwargs
+        "ns3ai_gym_env/Ns3-v0", targetName="rl_tcp_gym", ns3Path="../../", **env_kwargs  # type: ignore
     )
     ob_space = env.observation_space
     ac_space = env.action_space
