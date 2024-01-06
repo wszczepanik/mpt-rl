@@ -1,12 +1,7 @@
-import csv
-import json
-import os
 import time
-from glob import glob
 from typing import Any, Dict, List, Optional, SupportsFloat, Tuple, Union
 
 import gymnasium as gym
-import pandas
 from gymnasium.core import ActType, ObsType
 
 from stable_baselines3.common.monitor import ResultsWriter
@@ -107,7 +102,7 @@ class CustomMonitor(gym.Wrapper[ObsType, ActType, ObsType, ActType]):
                 "r": round(ep_rew, 6),
                 "l": ep_len,
                 "t": round(time.time() - self.t_start, 6),
-                "seed": self.env.unwrapped.ns3Settings["simSeed"],
+                "seed": self.env.unwrapped.ns3Settings["simSeed"], # type: ignore
             }
             for key in self.info_keywords:
                 ep_info[key] = info[key]

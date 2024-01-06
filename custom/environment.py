@@ -22,6 +22,6 @@ class Ns3EnvWrapped(gym.Wrapper[ObsType, ActType, ObsType, ActType]):
         Change ns3settings seed after reset
         """
         # todo: change how things are accessed
-        self.env.unwrapped.ns3Settings["simSeed"] += 1
+        self.env.unwrapped.ns3Settings["simSeed"] += 1 # type: ignore
 
         return self.env.reset(**kwargs)
