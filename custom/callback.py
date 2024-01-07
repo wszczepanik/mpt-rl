@@ -21,7 +21,7 @@ class TensorboardCallback(BaseCallback):
         self.cum_rew += self.training_env.unwrapped.buf_rews[0]  # type: ignore
 
         self.logger.record("env/cum_rew", self.cum_rew)
-        self.logger.record("observation/all", self.training_env.unwrapped.buf_obs[None])  # type: ignore
+        self.logger.record("observation/all", self.training_env.unwrapped.buf_obs[None][0])  # type: ignore
         self.logger.record("action/ssThresh", self.training_env.unwrapped.actions[0][0])  # type: ignore
         self.logger.record("action/cWnd", self.training_env.unwrapped.actions[0][1])  # type: ignore
 

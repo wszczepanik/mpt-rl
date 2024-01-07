@@ -40,7 +40,7 @@ class CustomMonitor(gym.Wrapper[ObsType, ActType, ObsType, ActType]):
             self.results_writer = ResultsWriter(
                 filename,
                 header={"t_start": self.t_start, "env_id": str(env_id)},
-                extra_keys=reset_keywords + info_keywords + ("seed",),
+                extra_keys=reset_keywords + info_keywords + tuple(self.env.unwrapped.ns3Settings.keys()),  # type: ignore
                 override_existing=override_existing,
             )
 
@@ -102,7 +102,7 @@ class CustomMonitor(gym.Wrapper[ObsType, ActType, ObsType, ActType]):
                 "r": round(ep_rew, 6),
                 "l": ep_len,
                 "t": round(time.time() - self.t_start, 6),
-                "seed": self.env.unwrapped.ns3Settings["simSeed"], # type: ignore
+                **self.env.unwrapped.ns3Settings,  # type: ignore
             }
             for key in self.info_keywords:
                 ep_info[key] = info[key]
