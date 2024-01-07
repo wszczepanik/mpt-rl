@@ -277,7 +277,7 @@ TcpTimeStepEnv::GetObservationSpace()
     // throughput
 
     // uint32_t parameterNum = 16;
-    uint32_t parameterNum = 5;
+    uint32_t parameterNum = 6;
     float low = 0.0;
     float high = static_cast<float>(__UINT32_MAX__ - 1);
     std::vector<uint32_t> shape = {
@@ -297,7 +297,7 @@ Ptr<OpenGymDataContainer>
 TcpTimeStepEnv::GetObservation()
 {
     // uint32_t parameterNum = 16;
-    uint32_t parameterNum = 5;
+    uint32_t parameterNum = 6;
     std::vector<uint32_t> shape = {
         parameterNum,
     };
@@ -365,7 +365,7 @@ TcpTimeStepEnv::GetObservation()
 
     // throughput  bytes/s
     m_throughput = (m_segmentsAckedSum * m_tcb->m_segmentSize) / m_timeStep.GetSeconds();
-    // box->AddValue(m_throughput);
+    box->AddValue(static_cast<int64_t>(m_throughput));
 
     // Print data
     NS_LOG_INFO("MyGetObservation: " << box);
