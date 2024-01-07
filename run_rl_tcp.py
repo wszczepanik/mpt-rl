@@ -30,7 +30,12 @@ def run_tensorboard(path: str | os.PathLike) -> None:
         logging.info(f"Tensorflow listening on {url}")
 
 
-if __name__ == "__main__":
+def parse_args() -> argparse.Namespace:
+    """Parse input args to object returned.
+
+    Returns:
+        argparse.Namespace: object with parsed attributes
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--seed", default=42, type=int, help="set seed for reproducibility"
@@ -42,9 +47,9 @@ if __name__ == "__main__":
         "--duration", type=float, default=100, help="set simulation duration (seconds)"
     )
     parser.add_argument(
-        "--save_dir",
+        "--output_dir",
         type=str,
-        default="save",
+        default="output",
         help="Location where to save data",
     )
     parser.add_argument(
@@ -52,8 +57,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--tensorboard_log",
+        default=True,
         action="store_true",
-        help="Log to Tensorboard, optional",
+        help="Log Tensorboard, optional",
+    )
+    parser.add_argument(
+        "--run_tensorboard",
+        default=False,
+        action="store_true",
+        help="Run Tensorboard, optional",
     )
     parser.add_argument(
         "--log_level",
@@ -62,13 +74,16 @@ if __name__ == "__main__":
         choices=["CRITICAL", "FATAL", "ERROR", "WARN", "WARNING", "INFO", "DEBUG"],
         help="Log level (CRITICAL, FATAL, ERROR, WARN, WARNING, INFO, DEBUG)",
     )
+    return parser.parse_args()
 
-    args = parser.parse_args()
+
+def main() -> None:
+    args = parse_args()
 
     logging.basicConfig(level=logging._nameToLevel[args.log_level])
 
-    save_dir = os.path.join(
-        args.save_dir,
+    output_dir = os.path.join(
+        args.output_dir,
         datetime.strftime(datetime.now(), "A2C_%Y-%m-%d_%H-%M-%S"),
     )
 
@@ -98,44 +113,46 @@ if __name__ == "__main__":
     # currently fails as -1 can be returned, fix later
     # check_env(env)
 
-    try:
-        if args.tensorboard_log:
-            tensorboard_log_dir = save_dir
-        else:
-            tensorboard_log_dir = None
+    if args.tensorboard_log:
+        tensorboard_log_dir = output_dir
+    else:
+        tensorboard_log_dir = None
 
-        env = CustomMonitor(env, filename=os.path.join(save_dir, "monitor.csv"))
+    if args.run_tensorboard:
+        run_tensorboard(os.path.dirname(args.output_dir))
+
+    # save each SAR
+    env = CustomMonitor(env, filename=os.path.join(output_dir, "monitor.csv"))
+
+    try:
+        model = A2C(
+            CustomActorCriticPolicy,
+            env=env,
+            tensorboard_log=tensorboard_log_dir,
+            device="cpu",
+            verbose=1,
+            learning_rate=0.0007,
+        )
 
         if args.load_model:
-            model = A2C.load(
-                args.load_model,
-                env=env,
-                tensorboard_log=tensorboard_log_dir,
-                verbose=1,
-            )
-        else:
-            model = A2C(
-                CustomActorCriticPolicy,
-                env=env,
-                tensorboard_log=tensorboard_log_dir,
-                verbose=1,
-            )
+            model = model.load(args.load_model)
 
         if tensorboard_log_dir:
-            new_logger = logger.configure(save_dir, ["stdout", "csv", "tensorboard"])
+            new_logger = logger.configure(output_dir, ["stdout", "csv", "tensorboard"])
             model.set_logger(new_logger)
             custom_callback = TensorboardCallback()
-            # one directory up to show all trials
-            run_tensorboard(os.path.dirname(save_dir))
         else:
             custom_callback = None
 
         # print network architecture
         logging.info(model.policy)
 
-        total_timesteps = 100000
+        total_timesteps = 10000
         model.learn(
-            total_timesteps, progress_bar=True, log_interval=1, callback=custom_callback
+            total_timesteps,
+            progress_bar=False,
+            log_interval=1,
+            callback=custom_callback,
         )
 
         # manually close env, by default it does not happen
@@ -147,7 +164,7 @@ if __name__ == "__main__":
         # from stable_baselines3.common.evaluation import evaluate_policy
         # evaluate_policy(model, env, n_eval_episodes=1)
 
-        saved_model_path = os.path.join(save_dir, "model")
+        saved_model_path = os.path.join(output_dir, f"model_{total_timesteps}")
         model.save(saved_model_path)
 
         # del model
@@ -166,5 +183,9 @@ if __name__ == "__main__":
         except AttributeError:
             pass
 
-    if args.tensorboard_log:
+    if args.run_tensorboard:
         input("Press enter to close tensorboard.")
+
+
+if __name__ == "__main__":
+    main()
