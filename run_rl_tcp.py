@@ -15,7 +15,7 @@ from tensorboard import program
 import ns3ai_gym_env
 import gymnasium as gym
 
-from sim_args import TcpRlSimArgs
+from custom.sim_args import TcpRlSimArgs
 from custom.model import *
 from custom.wrapper import CustomMonitor
 from custom.callback import TensorboardCallback
