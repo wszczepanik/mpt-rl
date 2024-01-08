@@ -24,21 +24,18 @@ class EnvParamGenerator:
     ['_bit_generator', '_poisson_lam_max', 'beta', 'binomial', 'bit_generator', 'bytes', 'chisquare', 'choice', 'dirichlet', 'exponential', 'f', 'gamma', 'geometric', 'gumbel', 'hypergeometric', 'integers', 'laplace', 'logistic', 'lognormal', 'logseries', 'multinomial', 'multivariate_hypergeometric', 'multivariate_normal', 'negative_binomial', 'noncentral_chisquare', 'noncentral_f', 'normal', 'pareto', 'permutation', 'permuted', 'poisson', 'power', 'random', 'rayleigh', 'shuffle', 'standard_cauchy', 'standard_exponential', 'standard_gamma', 'standard_normal', 'standard_t', 'triangular', 'uniform', 'vonmises', 'wald', 'weibull', 'zipf']
     """
 
-    def __init__(
-        self,
-        input_file: str | PathLike,
-        target_class: Type
-    ) -> None:
+    def __init__(self, input_file: str | PathLike, target_class: Type) -> None:
         """Constructor method
 
         Args:
             input_file (str | PathLike): Path to input YAML file.
             target_class (Type):
         """
-        self.input_yaml = None
+        self.input_dict = dict()
         self.output = dict()
 
         self.target_class = target_class
+        self.target_arguments = dict()
         self.input_file = Path(input_file)
         self.load_yaml()
 
@@ -49,7 +46,7 @@ class EnvParamGenerator:
             None
         """
         yaml = YAML(typ="safe")
-        self.input_yaml = yaml.load(self.input_file)
+        self.input_dict = yaml.load(self.input_file)["ns3Settings"]
 
     def generate(self) -> Dict:
         """Generate new QKDNetSim config and save to file.
@@ -58,7 +55,6 @@ class EnvParamGenerator:
             Dict: target class as dictionary
         """
 
-        self.output = self.target_class()
         # # kms_nodes is required, only one can exist
         # self.output_dict["kms_nodes"] = dict()
         # for key, value in self.input_yaml["kms_nodes"].items():
@@ -81,6 +77,10 @@ class EnvParamGenerator:
         #     self.validate_output()
         # except ValidationError as e:
         #     logging.error(e)
+
+        self.target_arguments = self.input_dict
+
+        self.output = self.target_class(**self.target_arguments)
 
         return self.output.asdict()
 
