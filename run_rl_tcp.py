@@ -20,6 +20,7 @@ from custom.model import *
 from custom.wrapper import CustomMonitor
 from custom.callback import TensorboardCallback
 from custom.environment import Ns3EnvWrapped
+from custom.env_param_generator import EnvParamGenerator
 
 
 def run_tensorboard(path: str | os.PathLike) -> None:
@@ -41,10 +42,10 @@ def parse_args() -> argparse.Namespace:
         "--seed", default=42, type=int, help="set seed for reproducibility"
     )
     parser.add_argument(
-        "--sim_seed", default=0, type=int, help="set simulation run number"
-    )
-    parser.add_argument(
-        "--duration", type=float, default=100, help="set simulation duration (seconds)"
+        "--input_yaml",
+        type=str,
+        default=None,
+        help="YAML file with simulation parameters",
     )
     parser.add_argument(
         "--output_dir",
@@ -93,14 +94,13 @@ def main() -> None:
     torch.manual_seed(my_seed)
 
     # create env with env_kwargs passed as ns3 arguments
+    generator = EnvParamGenerator(TcpRlSimArgs, args.input_yaml)
     env_kwargs = {
-        "ns3Settings": TcpRlSimArgs(
-            duration=args.duration, simSeed=args.sim_seed
-        ).asdict()
+        "ns3Settings": generator.generate(),
     }
 
     env = gym.make(
-        "ns3ai_gym_env/Ns3-v0", targetName="rl_tcp_gym", ns3Path="../../", **env_kwargs  # type: ignore
+        "ns3ai_gym_env/Ns3-v0", targetName="rl_tcp_gym", ns3Path="../../", **env_kwargs # type: ignore
     )
     ob_space = env.observation_space
     ac_space = env.action_space
@@ -108,7 +108,7 @@ def main() -> None:
     logging.info(f"Action space: {ac_space}, {ac_space.dtype}")
 
     # wrap env so seed will be changed after each reset
-    env = Ns3EnvWrapped(env=env)
+    env = Ns3EnvWrapped(env=env, generator=generator) # type: ignore
 
     # currently fails as -1 can be returned, fix later
     # check_env(env)
@@ -147,7 +147,7 @@ def main() -> None:
         # print network architecture
         logging.info(model.policy)
 
-        total_timesteps = 10000
+        total_timesteps = 100000
         model.learn(
             total_timesteps,
             progress_bar=False,

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, SupportsFloat, Tuple, Union
+from typing import Any, Dict, Tuple, Type
 
 import gymnasium as gym
 from gymnasium.core import ActType, ObsType
@@ -9,19 +9,18 @@ class Ns3EnvWrapped(gym.Wrapper[ObsType, ActType, ObsType, ActType]):
 
     Args:
         env (gym.Env): game environment
+        generator (Type): parameter generator class
     """
 
-    def __init__(
-        self,
-        env: gym.Env,
-    ):
+    def __init__(self, env: gym.Env, generator: Type):
+        self.generator = generator
         super().__init__(env=env)
 
     def reset(self, **kwargs) -> Tuple[ObsType, Dict[str, Any]]:
         """
-        Change ns3settings seed after reset
+        Change ns3settings parameters after reset
         """
-        # todo: change how things are accessed
-        self.env.unwrapped.ns3Settings["simSeed"] += 1 # type: ignore
+
+        self.env.unwrapped.ns3Settings = self.generator.generate() # type: ignore
 
         return self.env.reset(**kwargs)
