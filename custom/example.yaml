@@ -1,0 +1,13 @@
+%YAML 1.2
+---
+# naming is mostly kept from original json output file
+
+# current version of simulator supports only 2 kms_nodes
+ns3Settings:
+  srcNodeId: 1
+  dstNodeId: 2
+  srcDstDistance: 498661
+  defaultKeySize: 512
+  maximalKeysPerRequest: integers(10, 21)
+  minimalKeySize: choice([32, 64])
+  maximalKeySize: 8192
